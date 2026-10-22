@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Past Tense Adventure - Fase D Interaktif</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tone.js for game audio effects -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            heading: ['Fredoka', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              teal: '#0d9488',
+              orange: '#f97316',
+              amber: '#f59e0b',
+              navy: '#0f172a',
+              sky: '#0284c7',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: radial-gradient(circle at 10% 20%, #0f172a 0%, #1e293b 100%);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 12px;
+      overflow-x: hidden;
+    }
+
+    /* Fixed 16:9 container with auto scaling */
+    .aspect-16-9-frame {
+      width: 100%;
+      max-width: 1140px;
+      aspect-ratio: 16 / 9;
+      position: relative;
+      background: #f8fafc;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+
+    /* Fullscreen styling adjustments */
+    :fullscreen .aspect-16-9-frame,
+    :-webkit-full-screen .aspect-16-9-frame,
+    .aspect-16-9-frame:fullscreen,
+    .aspect-16-9-frame:-webkit-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      aspect-ratio: auto !important;
+    }
+
+    @media (max-aspect-ratio: 16/9) {
+      .aspect-16-9-frame {
+        aspect-ratio: auto;
+        min-height: 85vh;
+      }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .badge-pop {
+      animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes pop {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-amber-200">
+
+  <div class="aspect-16-9-frame">
+    <!-- Header Bar -->
+    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-5 py-3 flex items-center justify-between shrink-0 z-20">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center font-bold shadow-md shadow-orange-500/20">
+          <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+        </div>
+        <div>
+          <span class="text-[11px] font-bold tracking-widest uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">Fase D • Kelas VIII</span>
+          <h1 class="text-base font-bold font-heading text-slate-800 leading-tight">Past Tense & Indonesian Wonders</h1>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden md:flex items-center bg-slate-100 p-1 rounded-xl gap-1 text-xs font-semibold">
+        <button onclick="switchTab('materi')" id="tab-btn-materi" class="nav-tab-btn px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 bg-white text-slate-900 shadow-sm">
+          <i class="fa-solid fa-book-open text-amber-500"></i> Materi
+        </button>
+        <button onclick="switchTab('habitats')" id="tab-btn-habitats" class="nav-tab-btn px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <i class="fa-solid fa-paw text-emerald-500"></i> 1. Animals
+        </button>
+        <button onclick="switchTab('reactions')" id="tab-btn-reactions" class="nav-tab-btn px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <i class="fa-solid fa-masks-theater text-sky-500"></i> 2. Actions & Reactions
+        </button>
+        <button onclick="switchTab('diary')" id="tab-btn-diary" class="nav-tab-btn px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900">
+          <i class="fa-solid fa-calendar-week text-purple-500"></i> 3. Past Week Diary
+        </button>
+      </nav>
+
+      <!-- Score & Audio toggle -->
+      <div class="flex items-center gap-2">
+        <div class="bg-amber-50 border border-amber-200/80 px-3 py-1 rounded-full flex items-center gap-2 text-xs font-bold text-amber-800 shadow-sm">
+          <i class="fa-solid fa-star text-amber-500"></i>
+          <span>Skor: <span id="total-score" class="text-amber-600 font-extrabold text-sm">0</span>/100</span>
+        </div>
+        <button onclick="toggleSound()" id="sound-btn" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors text-xs" title="Toggle Suara">
+          <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+        </button>
+        <button onclick="toggleFullScreen()" id="fullscreen-btn" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors text-xs" title="Layar Penuh (Full Screen)">
+          <i class="fa-solid fa-expand" id="fullscreen-icon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Mobile Navigation Sub-bar -->
+    <div class="md:hidden flex overflow-x-auto bg-slate-100 p-1.5 gap-1 shrink-0 border-b border-slate-200 text-xs">
+      <button onclick="switchTab('materi')" class="whitespace-nowrap px-3 py-1 rounded-lg bg-white font-medium text-slate-800">Materi</button>
+      <button onclick="switchTab('habitats')" class="whitespace-nowrap px-3 py-1 rounded-lg text-slate-600">1. Animals</button>
+      <button onclick="switchTab('reactions')" class="whitespace-nowrap px-3 py-1 rounded-lg text-slate-600">2. Reactions</button>
+      <button onclick="switchTab('diary')" class="whitespace-nowrap px-3 py-1 rounded-lg text-slate-600">3. Diary</button>
+    </div>
+
+    <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50/70 relative">
+
+      <!-- ================= TAB 1: MATERI ================= -->
+      <section id="view-materi" class="tab-view max-w-4xl mx-auto space-y-4">
+        <!-- Banner -->
+        <div class="bg-gradient-to-r from-teal-700 via-teal-800 to-slate-900 rounded-2xl p-5 text-white shadow-md relative overflow-hidden">
+          <div class="absolute -right-6 -bottom-8 opacity-15 text-8xl text-white">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+          <div class="relative z-10 space-y-1">
+            <div class="inline-flex items-center gap-2 bg-teal-500/30 text-teal-200 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-teal-400/30">
+              <i class="fa-solid fa-sparkles"></i> Simple Past Tense (Waktu Lampau)
+            </div>
+            <h2 class="text-xl md:text-2xl font-extrabold font-heading">Kapan Kita Menggunakan Simple Past Tense?</h2>
+            <p class="text-teal-100 text-xs md:text-sm leading-relaxed max-w-2xl">
+              Digunakan untuk menceritakan peristiwa, tindakan, atau keadaan yang <strong>terjadi dan sudah selesai di masa lampau</strong> (<em>completed actions</em>), mendeskripsikan pengalaman liburan, cerita petualangan, atau catatan diari.
+            </p>
+          </div>
+        </div>
+
+        <!-- 2 Main Formulas (Sesuai Foto) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Card 1: Was / Were Form -->
+          <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3 mb-2.5">
+              <div class="w-9 h-9 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold text-base">
+                1
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-800 font-heading text-base">Was / Were Form (Nominal)</h3>
+                <p class="text-[11px] text-slate-500">Mendeskripsikan perasaan, kondisi, atau tempat di masa lalu.</p>
+              </div>
+            </div>
+
+            <div class="bg-sky-50/70 border border-sky-100 rounded-xl p-3 mb-3 text-xs">
+              <span class="font-bold text-sky-900">Pola Rumus:</span>
+              <div class="font-mono text-sky-700 font-semibold mt-0.5">Subject + was/were + Adjective / Noun / Place</div>
+            </div>
+
+            <div class="space-y-2 text-xs">
+              <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                <p class="text-slate-500 text-[11px] font-medium mb-1">Gunakan <strong>WAS</strong> untuk (<em>I, He, She, It, Single noun</em>):</p>
+                <p class="font-medium text-slate-700">• <em>I <strong>was</strong> sick yesterday.</em> (Saya dulu sakit)</p>
+                <p class="font-medium text-slate-700">• <em>She <strong>was</strong> proud of her score.</em> (Dia bangga)</p>
+              </div>
+              <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                <p class="text-slate-500 text-[11px] font-medium mb-1">Gunakan <strong>WERE</strong> untuk (<em>You, We, They, Plural nouns</em>):</p>
+                <p class="font-medium text-slate-700">• <em>Joni and Winda <strong>were</strong> confused.</em></p>
+                <p class="font-medium text-slate-700">• <em>They <strong>were</strong> excited at Karimun Jawa.</em></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Verb 2 Form -->
+          <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3 mb-2.5">
+              <div class="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-base">
+                2
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-800 font-heading text-base">Verbs Form (Verbal)</h3>
+                <p class="text-[11px] text-slate-500">Menyatakan tindakan aksi langsung yang dilakukan di masa lalu.</p>
+              </div>
+            </div>
+
+            <div class="bg-orange-50/70 border border-orange-100 rounded-xl p-3 mb-3 text-xs">
+              <span class="font-bold text-orange-900">Pola Rumus:</span>
+              <div class="font-mono text-orange-700 font-semibold mt-0.5">Subject + Past Form (Verb 2) + Object / Adverb</div>
+            </div>
+
+            <div class="space-y-2 text-xs">
+              <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                <span class="text-[11px] font-bold text-orange-700 uppercase tracking-wider">Regular Verbs (+ed / +d):</span>
+                <p class="text-slate-700 mt-1">• <em>play → <strong>played</strong></em>: The boys <strong>played</strong> football.</p>
+                <p class="text-slate-700">• <em>visit → <strong>visited</strong></em>: The tourist <strong>visited</strong> Borobudur Temple.</p>
+              </div>
+              <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                <span class="text-[11px] font-bold text-purple-700 uppercase tracking-wider">Irregular Verbs (Berubah Bentuk):</span>
+                <p class="text-slate-700 mt-1">• <em>give → <strong>gave</strong></em>: Galih <strong>gave</strong> me some apples.</p>
+                <p class="text-slate-700">• <em>see → <strong>saw</strong></em>: I <strong>saw</strong> a Komodo dragon.</p>
+                <p class="text-slate-700">• <em>ride → <strong>rode</strong></em>: We <strong>rode</strong> a jeep.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick CTA Button -->
+        <div class="text-center pt-2">
+          <button onclick="switchTab('habitats')" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold px-6 py-2.5 rounded-xl shadow-md shadow-orange-500/25 transition-all text-xs md:text-sm inline-flex items-center gap-2">
+            <span>Mulai Aktivitas 1: Animals & Habitats</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: ANIMALS & HABITATS ================= -->
+      <section id="view-habitats" class="tab-view hidden max-w-4xl mx-auto space-y-4">
+        <div class="bg-white rounded-2xl p-4 md:p-5 border border-slate-200/90 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Activity 1</span>
+                <h2 class="text-lg font-bold font-heading text-slate-800">Indonesian Endemic Animals & Habitats</h2>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Lengkapi tabel sesuai lembar kerja dengan memilih habitat alami yang tepat untuk ke-5 satwa langka Indonesia!</p>
+            </div>
+            <div id="habitat-badge-status" class="text-xs bg-slate-100 text-slate-600 font-semibold px-3 py-1 rounded-lg shrink-0 self-start sm:self-auto">
+              Progress: <span id="habitat-matched-count">0</span> / 5 Terpasang
+            </div>
+          </div>
+
+          <!-- The Table matching game -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100/80 text-slate-700 font-bold uppercase text-[11px]">
+                  <th class="p-3 rounded-l-xl w-12 text-center">No</th>
+                  <th class="p-3 w-48 md:w-60">Animals (Satwa)</th>
+                  <th class="p-3">Habitat yang Tepat</th>
+                  <th class="p-3 rounded-r-xl w-24 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-medium">
+                <!-- 1. Orangutan -->
+                <tr class="hover:bg-slate-50/60 transition-colors">
+                  <td class="p-3 font-bold text-slate-400 text-center">1</td>
+                  <td class="p-3">
+                    <div class="flex items-center gap-2.5">
+                      <span class="text-xl">🦧</span>
+                      <div>
+                        <div class="font-bold text-slate-800 text-sm">Orangutan</div>
+                        <div class="text-[10px] text-slate-400">Pongo pygmaeus</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="p-3">
+                    <select id="habitat-select-1" onchange="checkHabitat(1)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                      <option value="">-- Pilih Habitat yang Tepat --</option>
+                      <option value="tropical_rainforest">Tropical rainforests of Borneo and Sumatra</option>
+                      <option value="dry_savanna">Dry savannas and rugged hills of Komodo Island</option>
+                      <option value="freshwater_swamps">Freshwater swamps and lakes of Rote Island, NTT</option>
+                      <option value="lowland_sulawesi">Lowland and montane rainforests of Sulawesi</option>
+                      <option value="dense_forest_ujung">Dense coastal rainforests of Ujung Kulon, Banten</option>
+                    </select>
+                  </td>
+                  <td class="p-3 text-center" id="habitat-status-1">
+                    <span class="text-slate-300"><i class="fa-solid fa-circle text-xs"></i></span>
+                  </td>
+                </tr>
+
+                <!-- 2. Long-Neck Turtle -->
+                <tr class="hover:bg-slate-50/60 transition-colors">
+                  <td class="p-3 font-bold text-slate-400 text-center">2</td>
+                  <td class="p-3">
+                    <div class="flex items-center gap-2.5">
+                      <span class="text-xl">🐢</span>
+                      <div>
+                        <div class="font-bold text-slate-800 text-sm">Long-Neck Turtle</div>
+                        <div class="text-[10px] text-slate-400">Chelodina mccordi (Rote Island)</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="p-3">
+                    <select id="habitat-select-2" onchange="checkHabitat(2)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                      <option value="">-- Pilih Habitat yang Tepat --</option>
+                      <option value="tropical_rainforest">Tropical rainforests of Borneo and Sumatra</option>
+                      <option value="dry_savanna">Dry savannas and rugged hills of Komodo Island</option>
+                      <option value="freshwater_swamps">Freshwater swamps and lakes of Rote Island, NTT</option>
+                      <option value="lowland_sulawesi">Lowland and montane rainforests of Sulawesi</option>
+                      <option value="dense_forest_ujung">Dense coastal rainforests of Ujung Kulon, Banten</option>
+                    </select>
+                  </td>
+                  <td class="p-3 text-center" id="habitat-status-2">
+                    <span class="text-slate-300"><i class="fa-solid fa-circle text-xs"></i></span>
+                  </td>
+                </tr>
+
+                <!-- 3. Komodo Dragon -->
+                <tr class="hover:bg-slate-50/60 transition-colors">
+                  <td class="p-3 font-bold text-slate-400 text-center">3</td>
+                  <td class="p-3">
+                    <div class="flex items-center gap-2.5">
+                      <span class="text-xl">🦎</span>
+                      <div>
+                        <div class="font-bold text-slate-800 text-sm">Komodo Dragon</div>
+                        <div class="text-[10px] text-slate-400">Varanus komodoensis</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="p-3">
+                    <select id="habitat-select-3" onchange="checkHabitat(3)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                      <option value="">-- Pilih Habitat yang Tepat --</option>
+                      <option value="tropical_rainforest">Tropical rainforests of Borneo and Sumatra</option>
+                      <option value="dry_savanna">Dry savannas and rugged hills of Komodo Island</option>
+                      <option value="freshwater_swamps">Freshwater swamps and lakes of Rote Island, NTT</option>
+                      <option value="lowland_sulawesi">Lowland and montane rainforests of Sulawesi</option>
+                      <option value="dense_forest_ujung">Dense coastal rainforests of Ujung Kulon, Banten</option>
+                    </select>
+                  </td>
+                  <td class="p-3 text-center" id="habitat-status-3">
+                    <span class="text-slate-300"><i class="fa-solid fa-circle text-xs"></i></span>
+                  </td>
+                </tr>
+
+                <!-- 4. Anoa -->
+                <tr class="hover:bg-slate-50/60 transition-colors">
+                  <td class="p-3 font-bold text-slate-400 text-center">4</td>
+                  <td class="p-3">
+                    <div class="flex items-center gap-2.5">
+                      <span class="text-xl">🐃</span>
+                      <div>
+                        <div class="font-bold text-slate-800 text-sm">Anoa (Bubalus sp.)</div>
+                        <div class="text-[10px] text-slate-400">Sulawesi Dwarf Buffalo</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="p-3">
+                    <select id="habitat-select-4" onchange="checkHabitat(4)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                      <option value="">-- Pilih Habitat yang Tepat --</option>
+                      <option value="tropical_rainforest">Tropical rainforests of Borneo and Sumatra</option>
+                      <option value="dry_savanna">Dry savannas and rugged hills of Komodo Island</option>
+                      <option value="freshwater_swamps">Freshwater swamps and lakes of Rote Island, NTT</option>
+                      <option value="lowland_sulawesi">Lowland and montane rainforests of Sulawesi</option>
+                      <option value="dense_forest_ujung">Dense coastal rainforests of Ujung Kulon, Banten</option>
+                    </select>
+                  </td>
+                  <td class="p-3 text-center" id="habitat-status-4">
+                    <span class="text-slate-300"><i class="fa-solid fa-circle text-xs"></i></span>
+                  </td>
+                </tr>
+
+                <!-- 5. Java Rhinoceros -->
+                <tr class="hover:bg-slate-50/60 transition-colors">
+                  <td class="p-3 font-bold text-slate-400 text-center">5</td>
+                  <td class="p-3">
+                    <div class="flex items-center gap-2.5">
+                      <span class="text-xl">🦏</span>
+                      <div>
+                        <div class="font-bold text-slate-800 text-sm">Java Rhinoceros</div>
+                        <div class="text-[10px] text-slate-400">Rhinoceros sondaicus</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="p-3">
+                    <select id="habitat-select-5" onchange="checkHabitat(5)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                      <option value="">-- Pilih Habitat yang Tepat --</option>
+                      <option value="tropical_rainforest">Tropical rainforests of Borneo and Sumatra</option>
+                      <option value="dry_savanna">Dry savannas and rugged hills of Komodo Island</option>
+                      <option value="freshwater_swamps">Freshwater swamps and lakes of Rote Island, NTT</option>
+                      <option value="lowland_sulawesi">Lowland and montane rainforests of Sulawesi</option>
+                      <option value="dense_forest_ujung">Dense coastal rainforests of Ujung Kulon, Banten</option>
+                    </select>
+                  </td>
+                  <td class="p-3 text-center" id="habitat-status-5">
+                    <span class="text-slate-300"><i class="fa-solid fa-circle text-xs"></i></span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Past Tense Sentence Example Generator box -->
+          <div class="mt-4 p-3 bg-emerald-50/80 border border-emerald-200 rounded-xl text-xs flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-lightbulb text-emerald-600 text-sm"></i>
+              <span class="text-emerald-950 font-medium"><strong>Contoh Past Tense:</strong> <em>"Last month, researchers <strong>visited</strong> Ujung Kulon and <strong>photographed</strong> a Java rhinoceros."</em></span>
+            </div>
+            <button onclick="checkAllHabitats()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-colors shadow-sm">
+              Periksa Jawaban Satwa
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: ACTIONS & REACTIONS ================= -->
+      <section id="view-reactions" class="tab-view hidden max-w-4xl mx-auto space-y-4">
+        <div class="bg-white rounded-2xl p-4 md:p-5 border border-slate-200/90 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="bg-sky-100 text-sky-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Activity 2</span>
+                <h2 class="text-lg font-bold font-heading text-slate-800">Match Action with the Appropriate Reaction</h2>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Jodohkan tindakan/peristiwa masa lampau (Kolom A) dengan reaksi/perasaan yang sesuai (Kolom B)!</p>
+            </div>
+            <button onclick="resetReactionsGame()" class="text-xs text-slate-500 hover:text-slate-800 underline self-start sm:self-auto">
+              Reset Pilihan
+            </button>
+          </div>
+
+          <!-- Matching Interactive Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <!-- Left: Actions (Column A) -->
+            <div class="md:col-span-7 space-y-2.5">
+              <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <i class="fa-solid fa-bolt text-amber-500"></i> Column A: Past Action
+              </h3>
+
+              <div id="actions-container" class="space-y-2">
+                <!-- Items populated dynamically via JS for clean interactive logic -->
+              </div>
+            </div>
+
+            <!-- Right: Reactions (Column B) Reference & Selector -->
+            <div class="md:col-span-5 bg-slate-50 rounded-xl p-3.5 border border-slate-200/70 flex flex-col justify-between">
+              <div>
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <i class="fa-solid fa-heart text-rose-500"></i> Column B: Options (Reactions)
+                </h3>
+                <div class="space-y-1.5 text-xs">
+                  <div class="p-2 bg-white rounded-lg border border-slate-200 text-slate-700"><strong>a.</strong> He was happy.</div>
+                  <div class="p-2 bg-white rounded-lg border border-slate-200 text-slate-700"><strong>b.</strong> She was proud.</div>
+                  <div class="p-2 bg-white rounded-lg border border-slate-200 text-slate-700"><strong>c.</strong> I was scared.</div>
+                  <div class="p-2 bg-white rounded-lg border border-slate-200 text-slate-700"><strong>d.</strong> They were excited.</div>
+                  <div class="p-2 bg-white rounded-lg border border-slate-200 text-slate-700"><strong>e.</strong> I was exhausted.</div>
+                  <div class="p-2 bg-white rounded-lg border border-slate-200 text-slate-700"><strong>f.</strong> We were exhilarated.</div>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-slate-200">
+                <button onclick="submitReactionAnswers()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 rounded-xl text-xs transition-colors shadow-sm flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-check-double"></i> Cek Kesesuaian Reaksi
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: PAST WEEK DIARY ================= -->
+      <section id="view-diary" class="tab-view hidden max-w-4xl mx-auto space-y-4">
+        <div class="bg-white rounded-2xl p-4 md:p-5 border border-slate-200/90 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Activity 3</span>
+                <h2 class="text-lg font-bold font-heading text-slate-800">My Past Week Diary (Fill in the blanks)</h2>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5"><em>The simple past tense can be used as means to keep track of the things we did.</em> Isi dengan verb 2 yang tepat!</p>
+            </div>
+          </div>
+
+          <!-- Word Bank Box (Sesuai Kotak di Gambar) -->
+          <div class="bg-purple-50/70 border border-purple-200/80 rounded-xl p-3 mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-purple-900 flex items-center gap-1.5">
+                <i class="fa-solid fa-box-archive text-purple-600"></i> Word Bank (Bentuk Lampau / Verb 2):
+              </span>
+              <span class="text-[11px] text-purple-600 font-medium">Klik kata untuk mengisi slot aktif</span>
+            </div>
+            <div class="flex flex-wrap gap-2" id="wordbank-container">
+              <!-- Words: attended, studied, worked, hiked, spent, read, saw -->
+              <span onclick="insertWord('attended')" class="word-chip cursor-pointer bg-white hover:bg-purple-600 hover:text-white transition-all text-purple-800 font-semibold text-xs px-3 py-1.5 rounded-lg border border-purple-200 shadow-sm">attended</span>
+              <span onclick="insertWord('studied')" class="word-chip cursor-pointer bg-white hover:bg-purple-600 hover:text-white transition-all text-purple-800 font-semibold text-xs px-3 py-1.5 rounded-lg border border-purple-200 shadow-sm">studied</span>
+              <span onclick="insertWord('worked')" class="word-chip cursor-pointer bg-white hover:bg-purple-600 hover:text-white transition-all text-purple-800 font-semibold text-xs px-3 py-1.5 rounded-lg border border-purple-200 shadow-sm">worked</span>
+              <span onclick="insertWord('hiked')" class="word-chip cursor-pointer bg-white hover:bg-purple-600 hover:text-white transition-all text-purple-800 font-semibold text-xs px-3 py-1.5 rounded-lg border border-purple-200 shadow-sm">hiked</span>
+              <span onclick="insertWord('spent')" class="word-chip cursor-pointer bg-white hover:bg-purple-600 hover:text-white transition-all text-purple-800 font-semibold text-xs px-3 py-1.5 rounded-lg border border-purple-200 shadow-sm">spent</span>
+              <span onclick="insertWord('read')" class="word-chip cursor-pointer bg-white hover:bg-purple-600 hover:text-white transition-all text-purple-800 font-semibold text-xs px-3 py-1.5 rounded-lg border border-purple-200 shadow-sm">read</span>
+              <span onclick="insertWord('saw')" class="word-chip cursor-pointer bg-white hover:bg-purple-600 hover:text-white transition-all text-purple-800 font-semibold text-xs px-3 py-1.5 rounded-lg border border-purple-200 shadow-sm">saw</span>
+            </div>
+          </div>
+
+          <!-- Diary Lines 1 to 7 -->
+          <div class="space-y-2 text-xs md:text-sm">
+            <!-- 1. Monday -->
+            <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100/70 transition-colors">
+              <span class="w-6 text-center font-bold text-slate-400">1.</span>
+              <span class="font-medium text-slate-700 min-w-[100px]">On Monday, I</span>
+              <input type="text" id="diary-ans-1" placeholder="verb 2" class="diary-input bg-white border border-slate-300 rounded-md px-2.5 py-1 text-purple-800 font-bold w-28 text-center text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+              <span class="text-slate-600">some books at the town library.</span>
+              <span id="diary-icon-1" class="ml-auto text-xs"></span>
+            </div>
+
+            <!-- 2. Tuesday -->
+            <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100/70 transition-colors">
+              <span class="w-6 text-center font-bold text-slate-400">2.</span>
+              <span class="font-medium text-slate-700 min-w-[100px]">On Tuesday, I</span>
+              <input type="text" id="diary-ans-2" placeholder="verb 2" class="diary-input bg-white border border-slate-300 rounded-md px-2.5 py-1 text-purple-800 font-bold w-28 text-center text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+              <span class="text-slate-600">for my exams at home.</span>
+              <span id="diary-icon-2" class="ml-auto text-xs"></span>
+            </div>
+
+            <!-- 3. Wednesday -->
+            <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100/70 transition-colors">
+              <span class="w-6 text-center font-bold text-slate-400">3.</span>
+              <span class="font-medium text-slate-700 min-w-[100px]">On Wednesday, I</span>
+              <input type="text" id="diary-ans-3" placeholder="verb 2" class="diary-input bg-white border border-slate-300 rounded-md px-2.5 py-1 text-purple-800 font-bold w-28 text-center text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+              <span class="text-slate-600">a yoga class at the gym.</span>
+              <span id="diary-icon-3" class="ml-auto text-xs"></span>
+            </div>
+
+            <!-- 4. Thursday -->
+            <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100/70 transition-colors">
+              <span class="w-6 text-center font-bold text-slate-400">4.</span>
+              <span class="font-medium text-slate-700 min-w-[100px]">On Thursday, I</span>
+              <input type="text" id="diary-ans-4" placeholder="verb 2" class="diary-input bg-white border border-slate-300 rounded-md px-2.5 py-1 text-purple-800 font-bold w-28 text-center text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+              <span class="text-slate-600">old trains at a museum.</span>
+              <span id="diary-icon-4" class="ml-auto text-xs"></span>
+            </div>
+
+            <!-- 5. Friday -->
+            <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100/70 transition-colors">
+              <span class="w-6 text-center font-bold text-slate-400">5.</span>
+              <span class="font-medium text-slate-700 min-w-[100px]">On Friday, I</span>
+              <input type="text" id="diary-ans-5" placeholder="verb 2" class="diary-input bg-white border border-slate-300 rounded-md px-2.5 py-1 text-purple-800 font-bold w-28 text-center text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+              <span class="text-slate-600">on a school project at my friend's house.</span>
+              <span id="diary-icon-5" class="ml-auto text-xs"></span>
+            </div>
+
+            <!-- 6. Saturday -->
+            <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100/70 transition-colors">
+              <span class="w-6 text-center font-bold text-slate-400">6.</span>
+              <span class="font-medium text-slate-700 min-w-[100px]">On Saturday, I</span>
+              <input type="text" id="diary-ans-6" placeholder="verb 2" class="diary-input bg-white border border-slate-300 rounded-md px-2.5 py-1 text-purple-800 font-bold w-28 text-center text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+              <span class="text-slate-600">in the nearby national park.</span>
+              <span id="diary-icon-6" class="ml-auto text-xs"></span>
+            </div>
+
+            <!-- 7. Sunday -->
+            <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100/70 transition-colors">
+              <span class="w-6 text-center font-bold text-slate-400">7.</span>
+              <span class="font-medium text-slate-700 min-w-[100px]">On Sunday, I</span>
+              <input type="text" id="diary-ans-7" placeholder="verb 2" class="diary-input bg-white border border-slate-300 rounded-md px-2.5 py-1 text-purple-800 font-bold w-28 text-center text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+              <span class="text-slate-600">the day with my family, having a picnic in the park.</span>
+              <span id="diary-icon-7" class="ml-auto text-xs"></span>
+            </div>
+          </div>
+
+          <!-- Bottom check button -->
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <button onclick="clearDiaryAnswers()" class="text-xs text-slate-500 hover:text-slate-800 font-medium">
+              Bersihkan Isian
+            </button>
+            <button onclick="checkDiaryAnswers()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-5 py-2 rounded-xl text-xs transition-colors shadow-sm flex items-center gap-2">
+              <i class="fa-solid fa-check"></i> Periksa Catatan Diari
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Custom Result Modal (No alert()) -->
+    <div id="result-modal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl border border-slate-200 transform transition-all scale-100">
+        <div id="modal-icon-container" class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3 text-2xl">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h3 id="modal-title" class="font-heading font-bold text-lg text-slate-800">Kerja Bagus!</h3>
+        <p id="modal-desc" class="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">
+          Kamu telah menyelesaikan aktivitas ini dengan sangat baik.
+        </p>
+        <div class="bg-slate-50 rounded-xl p-3 mb-4 text-xs font-semibold text-slate-700 flex justify-around">
+          <div>Benar: <span id="modal-correct-count" class="text-emerald-600 font-bold">0</span></div>
+          <div>Skor Total: <span id="modal-score" class="text-amber-600 font-bold">0</span>/100</div>
+        </div>
+        <button onclick="closeModal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl text-xs transition-all">
+          Lanjutkan Belajar
+        </button>
+      </div>
+    </div>
+
+    <footer class="bg-white border-t border-slate-200/80 px-5 py-2 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-graduation-cap text-amber-500"></i>
+        <span>Bahasa Inggris SMP/MTs (Fase D) • Kurikulum Merdeka</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Interaktif</span>
+        <span class="hidden sm:inline">Rasio Layar 16:9</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // State management
+    const state = {
+      score: 0,
+      soundEnabled: true,
+      lastFocusedInput: null,
+      scoresPerSection: {
+        habitats: 0,   // max 30
+        reactions: 0,  // max 35
+        diary: 0       // max 35
+      }
+    };
+
+    // Tone.js Sound Synthesizer
+    let synth = null;
+    function initSynth() {
+      if (!synth && window.Tone) {
+        try {
+          synth = new Tone.PolySynth(Tone.Synth).toDestination();
+          synth.volume.value = -8;
+        } catch(e) {
+          console.warn("Audio Context init deferred", e);
+        }
+      }
+    }
+
+    function playSound(type) {
+      if (!state.soundEnabled) return;
+      initSynth();
+      try {
+        if (Tone.context.state !== 'running') {
+          Tone.start();
+        }
+        if (type === 'correct') {
+          synth.triggerAttackRelease(["C5", "E5", "G5"], "16n");
+        } else if (type === 'wrong') {
+          synth.triggerAttackRelease(["C3", "B2"], "8n");
+        } else if (type === 'win') {
+          synth.triggerAttackRelease(["C4", "G4", "C5", "E5"], "8n");
+        }
+      } catch (err) {
+        // Fallback silently if audio restricted
+      }
+    }
+
+    function toggleSound() {
+      state.soundEnabled = !state.soundEnabled;
+      const icon = document.getElementById('sound-icon');
+      if (state.soundEnabled) {
+        icon.className = 'fa-solid fa-volume-high';
+      } else {
+        icon.className = 'fa-solid fa-volume-xmark';
+      }
+    }
+
+    function toggleFullScreen() {
+      const container = document.querySelector('.aspect-16-9-frame');
+      const icon = document.getElementById('fullscreen-icon');
+
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (container.requestFullscreen) {
+          container.requestFullscreen().catch(err => {
+            console.warn("Fullscreen request error:", err);
+          });
+        } else if (container.webkitRequestFullscreen) {
+          container.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(err => {
+            console.warn("Exit fullscreen error:", err);
+          });
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      }
+    }
+
+    // Monitor fullscreen state change across browsers
+    document.addEventListener('fullscreenchange', updateFullscreenIcon);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+
+    function updateFullscreenIcon() {
+      const icon = document.getElementById('fullscreen-icon');
+      const btn = document.getElementById('fullscreen-btn');
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        icon.className = 'fa-solid fa-compress';
+        btn.setAttribute('title', 'Keluar Layar Penuh (ESC)');
+      } else {
+        icon.className = 'fa-solid fa-expand';
+        btn.setAttribute('title', 'Layar Penuh (Full Screen)');
+      }
+    }
+
+    // Tab Switching
+    function switchTab(tabId) {
+      // Hide all views
+      document.querySelectorAll('.tab-view').forEach(view => view.classList.add('hidden'));
+      // Remove active states
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+        btn.classList.add('text-slate-600');
+      });
+
+      // Show targeted view
+      const targetView = document.getElementById(`view-${tabId}`);
+      if (targetView) targetView.classList.remove('hidden');
+
+      // Highlight active button
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+        activeBtn.classList.remove('text-slate-600');
+      }
+    }
+
+    const correctHabitats = {
+      1: "tropical_rainforest",   // Orangutan -> Borneo & Sumatra
+      2: "freshwater_swamps",     // Long-Neck Turtle -> Rote Island
+      3: "dry_savanna",           // Komodo dragon -> Komodo Island
+      4: "lowland_sulawesi",      // Anoa -> Sulawesi
+      5: "dense_forest_ujung"     // Java rhino -> Ujung Kulon
+    };
+
+    function checkHabitat(num) {
+      const select = document.getElementById(`habitat-select-${num}`);
+      const status = document.getElementById(`habitat-status-${num}`);
+      const val = select.value;
+
+      if (!val) {
+        status.innerHTML = `<span class="text-slate-300"><i class="fa-solid fa-circle text-xs"></i></span>`;
+        updateHabitatsProgress();
+        return;
+      }
+
+      if (val === correctHabitats[num]) {
+        status.innerHTML = `<span class="text-emerald-500 font-bold badge-pop"><i class="fa-solid fa-circle-check text-sm"></i></span>`;
+        select.classList.remove('border-rose-400', 'bg-rose-50');
+        select.classList.add('border-emerald-400', 'bg-emerald-50');
+      } else {
+        status.innerHTML = `<span class="text-rose-500 font-bold badge-pop"><i class="fa-solid fa-circle-xmark text-sm"></i></span>`;
+        select.classList.remove('border-emerald-400', 'bg-emerald-50');
+        select.classList.add('border-rose-400', 'bg-rose-50');
+      }
+      updateHabitatsProgress();
+    }
+
+    function updateHabitatsProgress() {
+      let correct = 0;
+      for (let i = 1; i <= 5; i++) {
+        const val = document.getElementById(`habitat-select-${i}`).value;
+        if (val === correctHabitats[i]) correct++;
+      }
+      document.getElementById('habitat-matched-count').textContent = correct;
+      state.scoresPerSection.habitats = Math.round((correct / 5) * 30);
+      recalcTotalScore();
+    }
+
+    function checkAllHabitats() {
+      let correct = 0;
+      for (let i = 1; i <= 5; i++) {
+        checkHabitat(i);
+        const val = document.getElementById(`habitat-select-${i}`).value;
+        if (val === correctHabitats[i]) correct++;
+      }
+      if (correct === 5) {
+        playSound('win');
+        confetti({ particleCount: 60, spread: 55, origin: { y: 0.7 } });
+        showModal('Luar Biasa!', `Semua habitat 5 satwa endemik Indonesia dijawab dengan tepat! Kamu mendapatkan ${state.scoresPerSection.habitats} poin.`, correct, 5);
+      } else {
+        playSound(correct > 0 ? 'correct' : 'wrong');
+        showModal('Hasil Aktivitas 1', `Kamu menjawab ${correct} dari 5 satwa dengan benar. Coba periksa kembali satwa yang masih berwarna merah!`, correct, 5);
+      }
+    }
+
+    const reactionItems = [
+      { id: 1, action: "1. I saw a Komodo dragon for the first time.", correct: "c", explanation: "Melihat komodo pertama kali membuat takut ('c. I was scared')." },
+      { id: 2, action: "2. I reached the top of Mt Merapi.", correct: "e", explanation: "Mendaki sampai puncak gunung merapi sangat melelahkan ('e. I was exhausted')." },
+      { id: 3, action: "3. The tourist visited Borobudur Temple.", correct: "a", explanation: "Turis laki-laki (He) senang berkunjung ke Borobudur ('a. He was happy')." },
+      { id: 4, action: "4. My friends stayed at Karimun Jawa.", correct: "d", explanation: "Teman-teman (They) sangat antusias di Karimun Jawa ('d. They were excited')." },
+      { id: 5, action: "5. We rode a jeep at Bromo mountain plateau.", correct: "f", explanation: "Kami (We) merasa sangat bersemangat/terpacu adrenalin ('f. We were exhilarated')." },
+      { id: 6, action: "6. Hanna spoke to a foreigner at Prambanan Temple.", correct: "b", explanation: "Hanna (She) merasa bangga bisa bicara bahasa Inggris ('b. She was proud')." }
+    ];
+
+    function renderReactionsUI() {
+      const container = document.getElementById('actions-container');
+      container.innerHTML = reactionItems.map(item => `
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3 hover:bg-white transition-all">
+          <div class="text-xs font-semibold text-slate-800 flex-1">
+            ${item.action}
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="reaction-select-${item.id}" class="bg-white border border-slate-300 rounded-lg py-1 px-2 text-xs font-bold text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
+              <option value="">Pilih (a-f)</option>
+              <option value="a">a. He was happy</option>
+              <option value="b">b. She was proud</option>
+              <option value="c">c. I was scared</option>
+              <option value="d">d. They were excited</option>
+              <option value="e">e. I was exhausted</option>
+              <option value="f">f. We were exhilarated</option>
+            </select>
+            <span id="reaction-feedback-${item.id}" class="w-5 text-center text-xs"></span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function submitReactionAnswers() {
+      let correct = 0;
+      reactionItems.forEach(item => {
+        const sel = document.getElementById(`reaction-select-${item.id}`);
+        const fb = document.getElementById(`reaction-feedback-${item.id}`);
+        if (sel.value === item.correct) {
+          correct++;
+          fb.innerHTML = `<i class="fa-solid fa-check text-emerald-500"></i>`;
+          sel.classList.remove('border-rose-400', 'bg-rose-50');
+          sel.classList.add('border-emerald-400', 'bg-emerald-50');
+        } else {
+          fb.innerHTML = `<i class="fa-solid fa-xmark text-rose-500"></i>`;
+          sel.classList.remove('border-emerald-400', 'bg-emerald-50');
+          sel.classList.add('border-rose-400', 'bg-rose-50');
+        }
+      });
+
+      state.scoresPerSection.reactions = Math.round((correct / 6) * 35);
+      recalcTotalScore();
+
+      if (correct === 6) {
+        playSound('win');
+        confetti({ particleCount: 70, spread: 60 });
+        showModal('Sempurna!', 'Semua aksi dan reaksi (was/were + adjective) cocok secara tepat dan gramatikal!', correct, 6);
+      } else {
+        playSound(correct > 0 ? 'correct' : 'wrong');
+        showModal('Hasil Aktivitas 2', `Kamu mencocokkan ${correct} dari 6 aksi & reaksi dengan benar. Pikirkan subjeknya (I, He, She, We, They)!`, correct, 6);
+      }
+    }
+
+    function resetReactionsGame() {
+      reactionItems.forEach(item => {
+        const sel = document.getElementById(`reaction-select-${item.id}`);
+        const fb = document.getElementById(`reaction-feedback-${item.id}`);
+        sel.value = '';
+        sel.className = 'bg-white border border-slate-300 rounded-lg py-1 px-2 text-xs font-bold text-sky-800';
+        fb.innerHTML = '';
+      });
+      state.scoresPerSection.reactions = 0;
+      recalcTotalScore();
+    }
+
+    const correctDiary = {
+      1: "read",      // read some books at library
+      2: "studied",   // studied for my exams
+      3: "attended",  // attended a yoga class
+      4: "saw",       // saw old trains at a museum
+      5: "worked",    // worked on a school project
+      6: "hiked",     // hiked in national park
+      7: "spent"      // spent the day with family
+    };
+
+    // Track active inputs for wordbank clicking
+    document.querySelectorAll('.diary-input').forEach(input => {
+      input.addEventListener('focus', function() {
+        state.lastFocusedInput = this;
+      });
+    });
+
+    function insertWord(word) {
+      if (state.lastFocusedInput) {
+        state.lastFocusedInput.value = word;
+        // Move focus to next input if available
+        const currentId = parseInt(state.lastFocusedInput.id.replace('diary-ans-', ''));
+        const nextInput = document.getElementById(`diary-ans-${currentId + 1}`);
+        if (nextInput) {
+          nextInput.focus();
+        }
+      } else {
+        // If none focused, put into the first empty slot
+        for (let i = 1; i <= 7; i++) {
+          const inp = document.getElementById(`diary-ans-${i}`);
+          if (!inp.value.trim()) {
+            inp.value = word;
+            break;
+          }
+        }
+      }
+    }
+
+    function checkDiaryAnswers() {
+      let correct = 0;
+      for (let i = 1; i <= 7; i++) {
+        const inp = document.getElementById(`diary-ans-${i}`);
+        const icon = document.getElementById(`diary-icon-${i}`);
+        const userVal = inp.value.trim().toLowerCase();
+
+        if (userVal === correctDiary[i]) {
+          correct++;
+          icon.innerHTML = `<i class="fa-solid fa-check text-emerald-500 font-bold"></i>`;
+          inp.classList.remove('border-rose-400', 'bg-rose-50');
+          inp.classList.add('border-emerald-500', 'bg-emerald-50');
+        } else {
+          icon.innerHTML = `<i class="fa-solid fa-xmark text-rose-500 font-bold"></i>`;
+          inp.classList.remove('border-emerald-500', 'bg-emerald-50');
+          inp.classList.add('border-rose-400', 'bg-rose-50');
+        }
+      }
+
+      state.scoresPerSection.diary = Math.round((correct / 7) * 35);
+      recalcTotalScore();
+
+      if (correct === 7) {
+        playSound('win');
+        confetti({ particleCount: 80, spread: 70 });
+        showModal('Hebat Sekali!', 'Semua kalimat diari lampau (Verb 2) telah kamu isi dengan kata kerja yang tepat!', correct, 7);
+      } else {
+        playSound(correct > 0 ? 'correct' : 'wrong');
+        showModal('Hasil Aktivitas 3', `Kamu menjawab ${correct} dari 7 kalimat diari dengan benar. Perhatikan arti kata kerjanya ya!`, correct, 7);
+      }
+    }
+
+    function clearDiaryAnswers() {
+      for (let i = 1; i <= 7; i++) {
+        const inp = document.getElementById(`diary-ans-${i}`);
+        const icon = document.getElementById(`diary-icon-${i}`);
+        inp.value = '';
+        inp.className = 'diary-input bg-white border border-slate-300 rounded-md px-2.5 py-1 text-purple-800 font-bold w-28 text-center text-xs';
+        icon.innerHTML = '';
+      }
+      state.scoresPerSection.diary = 0;
+      recalcTotalScore();
+    }
+
+    function recalcTotalScore() {
+      state.score = state.scoresPerSection.habitats + state.scoresPerSection.reactions + state.scoresPerSection.diary;
+      document.getElementById('total-score').textContent = state.score;
+    }
+
+    function showModal(title, desc, correctCount, totalCount) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-desc').textContent = desc;
+      document.getElementById('modal-correct-count').textContent = `${correctCount} / ${totalCount}`;
+      document.getElementById('modal-score').textContent = state.score;
+      document.getElementById('result-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('result-modal').classList.add('hidden');
+    }
+
+    // Lifecycle initiation
+    window.onload = function() {
+      renderReactionsUI();
+      // Auto register first input
+      const firstInp = document.getElementById('diary-ans-1');
+      if (firstInp) state.lastFocusedInput = firstInp;
+    };
+  </script>
+</body>
+</html>
